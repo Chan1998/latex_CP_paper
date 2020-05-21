@@ -1,0 +1,75 @@
+% !Mode:: "TeX:UTF-8"
+
+\hitsetup{
+  %******************************
+  % 注意：
+  %   1. 配置里面不要出现空行
+  %   2. 不需要的配置信息可以删除
+  %******************************
+  %
+  %=====
+  % 秘级
+  %=====
+  statesecrets={公开},
+  natclassifiedindex={TM301.2},
+  intclassifiedindex={62-5},
+  %
+  %=========
+  % 中文信息
+  %=========
+  ctitleone={基于深度强化学习的},%本科生封面使用
+  ctitletwo={异构系统频谱智能分配},%本科生封面使用
+  ctitlecover={基于深度强化学习的异构系统\\频谱智能分配},%放在封面中使用，自由断行
+  ctitle={基于深度强化学习的异构系统频谱智能分配},%放在原创性声明中使用
+  %csubtitle={一条副标题}, %一般情况没有，可以注释掉
+  cxueke={工学},
+  csubject={通信工程},
+  caffil={电子与信息工程学院},
+  cauthor={陈鹏},
+  csupervisor={高玉龙副教授},
+  %  cassosupervisor={某某某教授}, % 副指导老师
+  %  ccosupervisor={某某某教授}, % 联合指导老师
+  % 日期自动使用当前时间，若需指定按如下方式修改：
+  cdate={2020年6月},
+  cstudentid={1160500920},
+  %cstudenttype={同等学力人员}, %非全日制教育申请学位者
+  %（同等学力人员）、（工程硕士）、（工商管理硕士）、
+  %（高级管理人员工商管理硕士）、（公共管理硕士）、（中职教师）、（高校教师）等
+  %
+  %
+  %=========
+  % 英文信息
+  %=========
+  etitle={Research on key technologies of partial porous externally pressurized gas bearing},
+  esubtitle={This is the sub title},
+  exueke={Engineering},
+  esubject={Computer Science and Technology},
+  eaffil={\emultiline[t]{School of Mechatronics Engineering \\ Mechatronics Engineering}},
+  eauthor={Yu Dongmei},
+  esupervisor={Professor XXX},
+  eassosupervisor={XXX},
+  % 日期自动生成，若需指定按如下方式修改：
+  edate={December, 2017},
+  estudenttype={Master of Art},
+  %
+  % 关键词用“英文逗号”分割
+  ckeywords={空天地一体化, 分簇模型, 频谱分配, 深度强化学习, 长短期记忆网络},
+  ekeywords={SAGIN, cluster model, spectrum allocation, DRL, LSTM},
+}
+
+\begin{cabstract}
+
+我们考虑异构系统中频谱动态与智能分配问题，构建其为部分观测马尔可夫决策过程，在空天地一体化框架下，我们提出分簇模型代替原有地面蜂窝网构架，让用户以自组织形式成为簇头或簇内用户并进行资源自主分配。使用深度强化学习，以集中离线训练方式对当前总体信道状态进行预测，给出可用信道集合，并通过同一网络使用户进行具体信道选择与功率控制，以此提高频谱的利用率，使整个网络吞吐量最大化。
+
+我们在传统的强化学习(RL)的基础上融合深度神经网络，形成深度强化学习(DQN)，增加智能体对高维输入数据的处理能力，并加入长短期记忆网络(LSTM)，提高智能体对连续时序信息的处理能力，使其可以依据既往信息对当前状态进行有效预测，并通过强化学习独有的决策能力获取最优动作，以此得到问题近似最优解。
+
+\end{cabstract}
+
+\begin{eabstract}
+   
+   We consider the problem of spectrum allocation in a dynamic heterogeneous system which is formulated as a partially observable Markov decision process. Under the frame of Space-air-ground integration network(SAGIN), we propose a new model of cluster to replace the cellular network. Users can self-organized to be cluster head or in-cluster users and they can autonomous allocation of resources. We apply deep reinforcement learning to solve the problem. We train the agent at central unit in an offline manner to have the ability of predicting the current state of the channels. In addition, the agent can use the same network frame to choose a specific channel and get on power control. Therefore the spectrum utilization can be improved and maximize whole network throughput.
+   
+   We merge deep neural network(DL) with the reinforcement learning(RL), which come to deep reinforcement learning(DRL),it can settle high-dimensional input data. In addition, we add LSTM to predict the state according to the past information. Finally, use the reinforcement learning to get an optimized action to solve the problem. 
+
+   
+\end{eabstract}
