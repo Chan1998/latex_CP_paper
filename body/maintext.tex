@@ -220,30 +220,63 @@ f_{t}=\sigma\left ( W_{f} \cdot \left [ h_{t-1},x_{t} \right ]+b_{f}\right )
 然后便是将LSTM加入传统深度神经网络之中，与DQN一同形成DRQN算法。这种深度强化学习因为加入了LSTM网络使得智能体可以通过历史信息对当前状态进行预测，可以更加有效的完成频谱智能分配任务。
 
 \section{DRQN算法优化}
-\subsection{Duling DQN}
+\subsection{Dueling DQN}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width = 1\textwidth]{dueling}
+	\caption{加入Dueling方法的DRQN结构示意图}
+	\label{fig:dueling结构图}
+\end{figure}
+在使用上文提出的深度强化学习解决频谱分配问题时，我们发现网络收敛速度不够快，智能体训练效率有限，通过参考文献\cite{8254101}提出的网络结构，发现需要改变输入网络结构。因为问题中包含某些比较差或比较好的状态，在这些状态下无论我们取什么动作都不会影响输出的奖赏。这时我们需要在现有网络基础上采取Dueling方法\cite{Wang2015Dueling}。该方法使用公式\ref{eq:dueling方法}表示。其中$V\left(\cdot\right)$表示只有状态决定的状态函数，$A\left(\cdot\right)$表示与动作状态相关的优势函数。更改后的整体网络结构如图\ref{fig:dueling结构图}所示。
+\begin{equation}\label{eq:dueling方法}
+Q\left ( a_{n}\left (t\right )\right )\leftarrow V + A\left ( a_{n}\left (t\right )\right )  
+\end{equation}
 
 \subsection{目标\textit{Q}网络}
+加入dueling方法后的深度神经网络拥有了更高的训练效率和更新速度，但整个系统的稳定性却达不到我们的预期要求。为此，通过借鉴DeepMind在2015年提出的一种新型算法对网络框架进行了更新和调整。这里我们在原有DRQN网络上再加上一个结构和初始权值一模一样的深度神经网络，两者分别使用$Q_{value}$和$Q_{target}$表示。在训练时我们会固定住$Q_{target}$网络的权值参数，仅对$Q_{value}$网络进行网络的反向梯度传递和权值更新，然后在经历固定次数（取决于我们设定的超参数）训练后将$Q_{value}$网络中所有权值和偏置参数复制给$Q_{target}$网络，达到一个延迟更新的目的。下面我们通过具体数学推导解释这样操作的原因。在我们计算网络的损失函数(TD error)时，我们是通过计算$Q_{value}$和$Q_{target}$的输出插值得到的，如式\ref{eq:target weight}所示。
+\begin{equation}\label{eq:target weight}
+\Delta w=\alpha\left [ \left ( R+\gamma\max _{a} \hat{Q}\left ( {s}' ,a,w\right )\right )- \hat{Q}\left ( s ,a,w\right )\right ]\nabla_{w}\hat{Q}\left ( s,a,w \right )
+\end{equation}
+\begin{figure}[htbp]
+	\begin{minipage}{\textwidth}
+		\centering
+		\subfigure{\label{fig:tensorboard_q_net}}\addtocounter{subfigure}{-2}
+		\subfigure{\subfigure[$Q_{value}$网络结构]{\includegraphics[width=0.25\textheight]{Q_net_tensorboard}}}
+		\hspace{1em}
+		\subfigure{\label{fig:tensorboard_q_target}}\addtocounter{subfigure}{-2}
+		\subfigure{\subfigure[$Q_{target}$网络结构]{\includegraphics[width=0.3\textheight]{Q_target_net_tensorboard}}}
+		\hspace{1em}	
+	\end{minipage}
+	\vspace{0.2em}
+	\caption{Tensorboard中两网络结构图}\label{fig:target网络}
+\end{figure}
+在实际计算中，我们希望公式\ref{eq:Q学习更新函数}中$E_{k}$趋近于零，因此，令$Q_{value}$网络输出值为我们想逼近的\textit{Q}函数，$\gamma\max _{a} \hat{Q}\left ( {s}' ,a,w\right )$设为$Q_{value}$网络逼近的下一状态\textit{Q}函数，其加上奖赏$r(s,a)$形成训练标签。问题在于该标签中$\gamma\max_{a}\hat{Q}\left ( {s}' ,a,w \right )$部分同网络权值具有极大的相关性，也就是每次训练标签同训练目标向同一方向改变，会产震荡现象，影响训练收敛及其稳定性。因此我们需要额外引入一个固定的标签，也即$Q_{target}$网络形成的标签，使用独立的参数来预测TD-error，并在固定次数步骤后对权值进行复制来进行训练，如公式\ref{eq:new target}所示。
+\begin{equation}\label{eq:new target}
+	\Delta w=\alpha\left [ \left ( R+\gamma\max _{a} \hat{Q}\left ( {s}' ,a,w^{-}\right )\right )- 	\hat{Q}\left ( s ,a,w\right )\right ]\nabla_{w}\hat{Q}\left ( s,a,w \right )
+\end{equation}
+在代码层面实际操作时，我们需要构建两个相同结构网络，但分别放置于不同的命名空间下，以此做到权值的独立性，这里我们对其Tensorboard结构图\ref{fig:target网络}进行展示。
 
 \section{本章小结}
-
+在这一章中，我们对深度强化学中\textit{Q}学习，DQN以及LSTM进行了简要介绍，通过类比认知无线电同强化学习相似之处，给出使用机器学习解决频谱分配问题的方案，并依据LSTM的历史信息感知判断和DQN对于MDP问题的高效决策能力，引出解决频谱分配问题需要使用的DRQN结构，并在此基础上加入Dueling方法提高算法训练效率，使用固定的$Q_{target}$网络保证网络的稳定性。对论文所使用的算法进行概要介绍以及必要的数学推导，便于从原理上理解机器学习解决相关问题的底层机理，为后文结果分析提供必要的理论支撑。
 
 
 
 \chapter{异构系统频谱智能分配}
 \section{引言}
+在介绍了问题背景和数学模型以及使用的机器学习算法之后，本章将对于基于分簇模型的异构系统频谱智能分配问题分为簇头选择，信道选择，功率控制三方面进行具体阐述以及使用Python配合Tensorflow平台进行算法仿真验证的结果展示以及分析，最后对本文使用的算法进行性能评估，提出存在不足并指出后续工作方向。
+\section{簇头选择}
+\subsection{基于DRQN的簇头选择}
 
-\section{信道估计}
-\subsection{基于真实数据的DRQN信道估计}
 
-\subsection{信道估计结果展示及分析}
+\subsection{簇头选择结果展示及分析}
 
-\section{冲突避免}
-\subsection{分布式DRQN冲突避免}
+\section{信道选择}
+\subsection{基于DRQN的分布式用户信道选择}
 
-\subsection{冲突避免结果展示及分析}
+\subsection{信道选择结果展示及分析}
 
 \section{功率控制}
-\subsection{DRQN智能化功率控制}
+\subsection{基于DRQN的智能化功率控制}
 
 \subsection{功率控制结果展示及分析}
 
@@ -318,19 +351,7 @@ f_{t}=\sigma\left ( W_{f} \cdot \left [ h_{t-1},x_{t} \right ]+b_{f}\right )
 \caption{输入图片对比}\label{fig:vaemnist}
 \end{figure}
 
-\chapter{公式}
-勾股定理公式$a^2$如公式(\ref{eq:gougu})。
 
-\begin{equation}\label{eq:gougu}
-	a^2 + b^2 = c^2
-\end{equation}
-
-\begin{equation}\label{eq:gougu2}
-	\begin{aligned}
-		a^2 + b^2 &= c^2\\
-		c^2 &= 1
-	\end{aligned}
-\end{equation}
 
 \chapter{表格}
 
