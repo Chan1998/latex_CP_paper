@@ -15,7 +15,7 @@ We investigate the use of Deep Reinforcement Learning, in particular, Deep Q lea
 
 The rest of the paper is organized as follows. Section II shows the related work. Section III formulates the dynamic multichannel access problem when channels are potentially correlated. Section IV presents a Myopic and a Whittle Indexbased heuristic to solve this problem. Section V presents the DQN framework. Section VI presents an optimal policy study on known ﬁxed-pattern channel switching, and Section VII shows through simulations that DQN can achieve optimal performance. The evaluation results considering both synthetic and testbed-based datasets are shown in section VIII. Section IX introduces an adaptive DQN approach and, ﬁnally, Section X concludes our work.
 
-\section{  RELATED WORK  }
+\section{  RELATED WORK AND  PROBLEM FORMULATION  }
 The dynamic multichannel access problem has been widely studied. But unlike many decision making problems, such as vertical handoff [6] and power allocation [7], that can
 be modeled as MDP, the dynamic multichannel problem is modeled as a POMDP, as channels are generally (two-state) Markov chains and a user has only partial observations. Finding an optimal channel access policy requires exponential time and space complexities. When channels are independent and identically distributed (i.i.d.), a Myopic policy has been shown to be optimal under certain conditions [8], [9]. But the Myopic policy does not have any performance guarantee when channels are correlated or follow different distributions. When channels are independent but may follow different Markov chains, the dynamic multichannel access problem can be modeled as a Restless Multi-armed bandit problem (RMAB). A Whittle Index policy is introduced in [10] and shares the same simple semi-universal structure and optimality result as the Myopic policy. Numerical results are also provided showing that the Whittle Index policy can achieve near-optimal performancewhen channels are nonidentical.But the Whittle Index approach is not applicable when channels are correlated, which is the focus of our work. 
 
@@ -23,7 +23,6 @@ In recent years, some works began to focus on the more practical and complex pro
 
 Reinforcement learning, including Q learning, has been integrated with advanced machine learning techniques to tackle difﬁcult high-dimensional problems [13]–[15]. In 2013, Google DeepMind used a deep neural network, called DQN, to approximate Q values in Q learning that overcomes the limitation of the traditional look-up table approach, and provide an end-to-end approach to allow an agent to learn a policy from its observations. To the best of our knowledge, ours is the ﬁrst study and implementation of DQN in the ﬁeld of dynamic multi-channel access.
 
-\section{   PROBLEM FORMULATION   }
 Consider a dynamic multichannel access problem where there is a single user dynamically choosing one out of N channels. At the beginning of each time slot, a user selects one channel to sense and transmit a packet. If the channel quality is good, the transmission succeeds and the user receives a positive reward (+1), else the user transmission fails and there is a negative reward (−1). The objective is to design a policy that maximizes the expected long-term reward. 
 
 To model correlation across channels, the whole system is described as a $2^{N}$ state Markov chain. Formally, let the state space of the Markov chain be $S=\left\{S_{1},\cdots,S_{2^{N}}\right\}$, each state $S_{i}$  is a length-N vector , where is the binary representation of the state of channel k: good (1) or bad (0). 
@@ -137,7 +136,7 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 本文的其余部分安排如下。 第二节介绍了相关工作。 第三节阐述了当信道潜在相关时的动态多信道访问问题。 第四部分介绍了基于近视和Whittle索引的启发式方法来解决此问题。 第五部分介绍了DQN框架。 第六节介绍了有关已知固定模式信道切换的最佳策略研究，第七节通过仿真显示DQN可以实现最佳性能。 第八节显示了考虑综合数据集和基于试验床的数据集的评估结果。 第九节介绍了一种自适应DQN方法，最后，第十节总结了我们的工作。
 
-\section{  相关工作  }
+\section{  相关工作与问题建模  }
 动态多信道访问问题已被广泛研究。但是与许多决策问题不同，例如垂直切换[6]和功率分配[7]，它可以
 如果将其建模为MDP，则将动态多通道问题建模为POMDP，因为通道通常是（两个状态的）马尔可夫链，并且用户只有部分观察力。寻找最佳的信道访问策略需要指数级的时间和空间复杂度。当频道是独立的且分布均匀（即i.d.）时，近视策略在某些条件下显示为最佳[8]，[9]。但是，当渠道相关或遵循不同的分布时，近视策略不具有任何性能保证。当通道独立但可以遵循不同的马尔可夫链时，可以将动态多通道访问问题建模为不安多臂匪徒问题（RMAB）。 Whittle索引策略在[10]中引入，与近视策略具有相同的简单半通用结构和最优结果。数值结果还表明，当渠道不相同时，Whittle指数策略可以实现接近最佳的性能，但是当渠道相关时，Whittle指数方法不适用，这是我们的工作重点。
 
@@ -145,7 +144,6 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 强化学习（包括Q学习）已与先进的机器学习技术集成在一起，以解决困难的高维问题[13] – [15]。 2013年，Google DeepMind使用了称为DQN的深度神经网络来逼近Q学习中的Q值，从而克服了传统查找表方法的局限性，并提供了一种端到端的方法以允许代理人学习 政策的观察。 据我们所知，我们是动态多通道访问领域中DQN的第一个研究和实现。
 
-\section{  问题建模   }
 考虑一个动态多通道访问问题，其中有一个用户动态地从N个通道中选择一个。 在每个时隙的开始，用户选择一个通道来感测和发送数据包。 如果信道质量良好，则传输成功并且用户获得正奖励（+1），否则用户传输失败并且存在负奖励（-1）。 目的是设计一种能够最大化预期长期回报的政策。 
 
 为了建模跨渠道的关联，整个系统被描述为 $2^{N}$ 马尔可夫链. 这里，让马尔可夫链的状态空间为$S=\left\{S_{1},\cdots,S_{2^{N}}\right\}$,每个状态 $S_{i}$  是一个长度为N的向量，其中是信道k状态的二进制表示形式：好（1）或坏（0）。
