@@ -6,7 +6,7 @@
 \textbf{Abstract:} We consider a dynamic multichannel access problem, where multiple correlated channels follow an unknown joint Markov model and users select the channel to transmit data. The objective is to ﬁnd a policy that maximizes the expected long-term number of successful transmissions. The problem is formulated as a partially observable Markov decision process with unknown system dynamics. To overcome the challenges of unknown dynamics and prohibitive computation, we apply the concept of reinforcement learning and implement a deep Q-network (DQN). We ﬁrst study the optimal policy for ﬁxedpattern channel switching with known system dynamics and show through simulations that DQN can achieve the same optimal performance without knowing the system statistics. We then compare the performance of DQN with a Myopic policy and a Whittle Index-based heuristic through both more general simulations as well as real data trace and show that DQN achieves near-optimal performance in more complex situations. Finally, we propose an adaptive DQN approach with the capability to adapt its learning in time-varying scenarios. 
 
 
-\section{ INTRODUCTION }
+\section*{ INTRODUCTION }
 prior work [2],[3] has shown that dynamic spectrum access is one of the keys to improving the spectrum utilization in wireless networks and meeting the need for more capacity. In the context of cognitive radio research, a standard assumption has been that secondary users may search and use idle channels that are not being used by their primary users (PU). While prior work has generally assumed a simple independent-channel (or PU activity) model, in practice external interference can cause the channels in wireless networks to be highly correlated, and the design of new algorithms and schemes in dynamic multichannel access is required to tackle this challenge.
 
 We consider in this work a multichannel access problem with N correlated channels. Each channel has two possible states: good or bad, and their joint distribution follow a $2^{N}$states Markovian model. There is a single user (wireless node) that selects one channel at each time slot to transmit a packet. If the selected channel is in the good state, the transmission is successful; otherwise, there is a transmission failure. The goal is to obtain as many successful transmissions as possible over time. As the user is only able to sense his selected channel at each time slot, there is no full observation of the system available. In general, the problem can be formulated as a partially observable Markov decision process (POMDP), which is PSPACE-hard and the best known solution for ﬁnding the exact solution requires an exponential computation complexity [4]. Even worse, the parameters of the joint Markovian model might not be known a-priori.
@@ -15,7 +15,7 @@ We investigate the use of Deep Reinforcement Learning, in particular, Deep Q lea
 
 The rest of the paper is organized as follows. Section II shows the related work. Section III formulates the dynamic multichannel access problem when channels are potentially correlated. Section IV presents a Myopic and a Whittle Indexbased heuristic to solve this problem. Section V presents the DQN framework. Section VI presents an optimal policy study on known ﬁxed-pattern channel switching, and Section VII shows through simulations that DQN can achieve optimal performance. The evaluation results considering both synthetic and testbed-based datasets are shown in section VIII. Section IX introduces an adaptive DQN approach and, ﬁnally, Section X concludes our work.
 
-\section{  RELATED WORK AND  PROBLEM FORMULATION  }
+\section*{  RELATED WORK AND  PROBLEM FORMULATION  }
 The dynamic multichannel access problem has been widely studied. But unlike many decision making problems, such as vertical handoff [6] and power allocation [7], that can
 be modeled as MDP, the dynamic multichannel problem is modeled as a POMDP, as channels are generally (two-state) Markov chains and a user has only partial observations. Finding an optimal channel access policy requires exponential time and space complexities. When channels are independent and identically distributed (i.i.d.), a Myopic policy has been shown to be optimal under certain conditions [8], [9]. But the Myopic policy does not have any performance guarantee when channels are correlated or follow different distributions. When channels are independent but may follow different Markov chains, the dynamic multichannel access problem can be modeled as a Restless Multi-armed bandit problem (RMAB). A Whittle Index policy is introduced in [10] and shares the same simple semi-universal structure and optimality result as the Myopic policy. Numerical results are also provided showing that the Whittle Index policy can achieve near-optimal performancewhen channels are nonidentical.But the Whittle Index approach is not applicable when channels are correlated, which is the focus of our work. 
 
@@ -50,7 +50,7 @@ As the dynamic multichannel access problem is a POMDP, the optimal sensing polic
 
  run-time as we increase the number of channels in the system. When the number of channels is higher than 5, we ﬁnd that the POMDP solver can not converge after a long interval, and it gets terminated when the run-time exceeds the time limit. All these factors make it impossible to ﬁnd the optimal solution to the problem in general, and many existing works [8]–[10], [17]–[21] attempt to address this challenge ofprohibitive computation by considering either simpler models or approximation algorithms.
 
-\section{  MYOPIC POLICY AND WHITTLE INDEX   }
+\section*{  MYOPIC POLICY AND WHITTLE INDEX   }
 In the domain of dynamic multichannel access, there are many existing works on ﬁnding the optimal/near-optimal policy with low computation cost when the channels are independent and system statistics (P) is known. The Myopic policy and the Whittle Index policy are two effective and easy-to-implement approaches for this setting.
 
 A Myopic policy only focuses on the immediate reward obtained from an action and ignores its effects in the future. Thus the user always tries to select a channel which gives the maximized expected immediate reward. The Myopic policy is not optimal in general. Researchers in [8] and [ 9] have studied its optimality when N channels are independent and statistically identical Gilbert-Elliot channels that follow the same 2-state Markov chain with the transition matrix.In addition, the Myopic policy has a simple robust structure that follows a round-robin channel selection procedure.
@@ -67,14 +67,14 @@ When channels are correlated, the Whittle Index cannot be deﬁned and thus the 
 
 The Myopic policy and the Whittle Index policy are easy to implement in practice and have polynomial run-time, however they achieve optimality only under certain conditions when channels are independent. Moreover, both policies require prior knowledge of the system dynamics, which is hard to obtain beforehand. However, to the best of our knowledge, there is no easy-to-implement policy applicable to the general case where channels are correlated and the system dynamics are unknown — thus a new approach is needed.
 
-\section{  DEEP REINFORCEMENT LEARNING FRAMEWORK    }
+\section*{  DEEP REINFORCEMENT LEARNING FRAMEWORK    }
 When channels are correlated and system dynamics are unknown,there are two main approachesto tackle the dynamic multichannel access problem:  The model-based approach is less favored since the user’s limited observation capability may result in a bad system model estimation. Even worse, even if the system dynamics is well estimated, solving a POMDP in a large state space is always a bottleneck as the dynamic programming method has exponential time complexity and the heuristic approaches do not have any performance guarantee. All these challenges motivate us to follow the model-free approach, which, by incorporating the idea of Reinforcement Learning, can learn directly from observations without the necessity of ﬁnding an estimated system model and can be easily extended to very large and complicated systems.In the context of the dynamic multichannel access, the problem can be converted to an MDP when considering the belief space, and Q-learning can be applied consequently. However,this approachis impractical since the belief update is maintainedby knowingthesystem transitionmatrixP a-priori, which is hardly available in practice. Instead, we apply Qlearning by directly considering the history of observations and actions. We deﬁne the state for the Q-learning at time slot t as a combination of historical selected channels as well as their observed channel conditions over previous M time slots, And intuitively, the more historical information we consider the better Q-learning can learn.
 
 Q-learning works well when the problem’s state space is small, as a look-up table can be used to update Q values. But this is impossible when the state space becomes large. The state space size in this work grows exponentially as we use a combination of M vectors of length N to represent historical observations and actions for a system with N 2-state channels over past M time slots. M is required to be large so that Q-learning can capture enough information for learning.Even worse, since many states are rarely visited, their corresponding Q-values are seldom updated. This causes Q learning to take a very long time to converge.Motivated by its success in other domains [5], we adopt the deep Q-Network approach to address the very large state space. DQN takes the state-action pair as input and outputs the corresponding Q-value. Q-network updates its weights θ at each iteration i to minimize the loss function $Q^{*}\left ( s,a \right )=\sum _{{s}'}P\left ( {s}'\mid s,a \right )\left ( R\left ( s,a,{s}' \right ) +\gamma\max _{{a}'}Q^{*}\left ( {s}' ,{a}'\right )\right )$.
 
 To study the performance of DQN, we ﬁrst consider a correlated channel model that we refer to as ﬁxed-pattern channel switching, in which all the N channels in the system can be divided into several independentsubsets and these subsets take turns to be activated following a ﬁxed pattern. Speciﬁcally, we assume all channels in one currently activated subset are good and all channels in inactivated subsets are bad. At each time slot, with a known probability the next following subset is activated, and with probability 1−p the current subset remains activated. We assume the activation order of the subsets is known, ﬁxed, and will not change over time. In this special case, the optimal policy can be found analytically and is summarized in Theorem 1, providing a baseline to evaluate the performance of DQN implementation in the next section. 
 
-\section{  EXPERIMENT AND EVALUATION OF LEARNING FOR UNKNOWN FIXED-PATTERN CHANNEL SWITCHING     }
+\section*{  EXPERIMENT AND EVALUATION OF LEARNING FOR UNKNOWN FIXED-PATTERN CHANNEL SWITCHING     }
 We present details of our DQN implementation and then evaluate its performance on the ﬁxed-pattern switching pattern model, comparing it to the optimal policy, through experiments.
 
 We design a DQN by following the Deep Q-learning with Experience Replay Algorithm [5] and implement it in TensorFlow [24]. The structure of our DQN is ﬁnalized as a fully connected neural network with each of the two hidden layers containing 200 neurons.1 The activation function of each neuron is Rectiﬁed Linear Unit (ReLU),The inputofthe DQN is deﬁned as the combination of previous actions and observations over previous M time slots
@@ -94,7 +94,7 @@ We consider a highly correlated scenario. In a 16-channel system, we assume only
 	\includegraphics[width = 1.0\textwidth]{附录图4}
 	\caption{fig4}
 \end{figure}
-\section{  CONCLUSION AND FUTURE WORK   }
+\section*{  CONCLUSION AND FUTURE WORK   }
 
 In this paper, we have considered the dynamic multichannel access problem in a more general and practical scenario when channels are correlated and system statistics is unknown. The problem is an unknown POMDP without any tractable solution, and we have applied an end-to-end DQN approach that directly utilizes historical observations and actions to ﬁnd the access policy via online learning. In the ﬁxed-pattern channel switching, we have analytically found the optimal access policy with known system statistics and full observation ability. Through simulations, we have shown DQN is able to achieve the same optimal performance even without any prior knowledge. We have also shown from both simulations and real data trace that DQN can achieve near-optimal performance in more complex scenarios. In addition, we have designed an adaptive DQN and shown through numerical simulations that it can detect system changes and re-learn in non-stationary dynamic environments.
 
@@ -128,7 +128,7 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 {\heiti 摘要：} 我们考虑一个动态的多通道访问问题，其中多个相关的通道遵循未知的联合马尔可夫模型，并且用户选择通道来传输数据。目的是找到一种政策，以使成功传输的预期长期数量最大化。该问题被表述为具有未知系统动力学的部分可观察到的马尔可夫决策过程。为了克服未知动力学和过高计算的挑战，我们应用了强化学习的概念并实现了深度Q网络（DQN）。我们首先研究具有已知系统动态特性的固定模式信道切换的最佳策略，并通过仿真显示DQN可以在不了解系统统计信息的情况下达到相同的最佳性能。然后，我们通过更一般的模拟以及实际数据跟踪，将DQN的性能与近视策略和基于Whittle索引的启发式方法进行比较，并显示DQN在更复杂的情况下可达到最佳性能。最后，我们提出了一种自适应DQN方法，该方法具有在时变情况下适应其学习的能力。
 
-\section{ 介绍 }
+\section*{ 介绍 }
 先前的工作[2]，[3]表明，动态频谱访问是提高无线网络频谱利用率和满足更大容量需求的关键之一。 在认知无线电研究的背景下，标准假设是次要用户可以搜索和使用其主要用户（PU）并未使用的空闲信道。 虽然先前的工作通常假设一个简单的独立信道（或PU活动）模型，但实际上，外部干扰会导致无线网络中的信道高度相关，因此需要设计动态多信道访问中的新算法和方案来解决 这个挑战。
 我们在这项工作中考虑了具有N个相关通道的多通道访问问题。 每个通道具有两个可能的状态：好或坏，并且它们的联合分布遵循$2^{N}$状态马尔可夫模型。 有一个用户（无线节点）在每个时隙选择一个通道来传输数据包。 如果选择的频道处于良好状态，则传输成功； 否则，传输失败。 目标是随着时间的推移获得尽可能多的成功传输。 由于用户只能在每个时隙中感测到他选择的频道，因此无法完全观察到可用的系统。 通常，可以将问题表述为部分可观察到的马尔可夫决策过程（POMDP），这是PSPACE难解的，要找到确切的解决方案，最著名的解决方案需要指数计算复杂性[4]。 更糟糕的是，联合马尔可夫模型的参数可能不是先验的。
 
@@ -136,7 +136,7 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 本文的其余部分安排如下。 第二节介绍了相关工作。 第三节阐述了当信道潜在相关时的动态多信道访问问题。 第四部分介绍了基于近视和Whittle索引的启发式方法来解决此问题。 第五部分介绍了DQN框架。 第六节介绍了有关已知固定模式信道切换的最佳策略研究，第七节通过仿真显示DQN可以实现最佳性能。 第八节显示了考虑综合数据集和基于试验床的数据集的评估结果。 第九节介绍了一种自适应DQN方法，最后，第十节总结了我们的工作。
 
-\section{  相关工作与问题建模  }
+\section*{  相关工作与问题建模  }
 动态多信道访问问题已被广泛研究。但是与许多决策问题不同，例如垂直切换[6]和功率分配[7]，它可以
 如果将其建模为MDP，则将动态多通道问题建模为POMDP，因为通道通常是（两个状态的）马尔可夫链，并且用户只有部分观察力。寻找最佳的信道访问策略需要指数级的时间和空间复杂度。当频道是独立的且分布均匀（即i.d.）时，近视策略在某些条件下显示为最佳[8]，[9]。但是，当渠道相关或遵循不同的分布时，近视策略不具有任何性能保证。当通道独立但可以遵循不同的马尔可夫链时，可以将动态多通道访问问题建模为不安多臂匪徒问题（RMAB）。 Whittle索引策略在[10]中引入，与近视策略具有相同的简单半通用结构和最优结果。数值结果还表明，当渠道不相同时，Whittle指数策略可以实现接近最佳的性能，但是当渠道相关时，Whittle指数方法不适用，这是我们的工作重点。
 
@@ -171,7 +171,7 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 运行时间，因为我们增加了系统中的通道数。 当通道数大于5时，我们发现POMDP求解器在长时间间隔后无法收敛，并且在运行时间超过时间限制时终止。 所有这些因素使得不可能找到一般问题的最佳解决方案，并且许多现有的工作[8]到[10]，[17]到[21]试图通过考虑更简单的模型或近似来解决这一禁止计算的挑战算法。
 
-\section{ 传统算法  }
+\section*{ 传统算法  }
 在动态多通道访问领域，当通道独立且系统统计数（P）已知时，已有许多工作以较低的计算成本来寻找最优/近最优策略。 近视策略和Whittle索引策略是此设置的两种有效且易于实现的方法。
 
 近视策略仅关注从动作中获得的即时奖励，而忽略了其将来的影响。 因此，用户总是尝试选择给出最大化的预期立即奖励的频道。 通常，近视策略不是最佳的。 [8]和[9]中的研究人员研究了N个通道是独立的且统计上相同的吉尔伯特-艾略特通道，它们遵循具有过渡矩阵的相同2状态马尔可夫链时的最优性。此外，近视策略具有简单的鲁棒结构 遵循循环信道选择过程。
@@ -188,14 +188,14 @@ This might serve as an useful benchmark dataset for researchers to use.
 
 近视策略和Whittle索引策略在实践中易于实现并且具有多项式运行时，但是它们仅在通道独立的特定条件下才能实现最优。 而且，这两种策略都需要先验的系统动力学知识，而这是很难事先获得的。 但是，据我们所知，没有适用于通行相关且系统动态未知的一般情况的易于实现的策略，因此需要一种新的方法。
 
-\section{  深度强化学习框架    }
+\section*{  深度强化学习框架    }
 当通道相关且系统动态未知时，有两种主要的方法可以解决动态多通道访问问题：基于模型的方法不太受青睐，因为用户有限的观察能力可能会导致不良的系统模型估计。甚至更糟的是，即使系统动力学得到了很好的估计，在大状态空间中解决POMDP始终是瓶颈，因为动态编程方法具有指数级的时间复杂度，并且启发式方法没有任何性能保证。所有这些挑战促使我们采取无模型方法，该方法通过整合强化学习的思想，可以直接从观察中学习，而无需寻找估计的系统模型，并且可以轻松地扩展到非常大而复杂的系统。在动态多通道访问的上下文中，考虑到置信空间后，可以将问题转换为MDP，从而可以应用Q学习。但是，这种方法是不切实际的，因为通过了解系统转换矩阵P来维持信念更新，而这在实践中几乎是不可用的。相反，我们通过直接考虑观察和行动的历史来应用Qlearning。我们将时隙t处的Q学习状态定义为历史选定通道及其在先前M个时隙中观察到的通道状况的组合。从直觉上讲，我们认为越多的历史信息可以更好地学习Q学习。
 
 当问题的状态空间较小时，Q学习效果很好，因为可以使用查询表来更新Q值。 但是，当状态空间变大时，这是不可能的。 由于我们使用长度为N的M个向量的组合来表示过去M个时隙中具有N个2状态通道的系统的历史观测值和动作，因此这项工作中的状态空间大小呈指数增长。 M必须很大，以便Q学习可以捕获足够的学习信息。更糟糕的是，由于很少访问许多状态，因此很少更新其对应的Q值。 这导致Q学习需要很长时间才能收敛。受其在其他领域的成功的推动[5]，我们采用深度Q网络方法来处理非常大的状态空间。 DQN将状态操作对作为输入并输出相应的Q值。 Q网络在每次迭代i时都会更新其权重$\sigma$以最小化损失函数$Q^{*}\left ( s,a \right )=\sum _{{s}'}P\left ( {s}'\mid s,a \right )\left ( R\left ( s,a,{s}' \right ) +\gamma\max _{{a}'}Q^{*}\left ( {s}' ,{a}'\right )\right )$.
 
 为了研究DQN的性能，我们首先考虑一个相关的信道模型，我们将其称为固定模式信道切换，其中系统中的所有N个信道都可以分为几个独立的子集，并且这些子集轮流被激活。 固定模式。 具体来说，我们假设一个当前激活的子集中的所有通道都是好通道，而未激活的子集中的所有通道都不好。 在每个时隙，以已知的概率激活下一个后续子集，以概率1-p激活当前子集。 我们假设子集的激活顺序是已知的，固定的，并且不会随时间变化。 在这种特殊情况下，可以通过分析找到最佳策略，并在定理1中对其进行了总结，在下一节中提供了基准来评估DQN实施的性能。
 
-\section{ 未知固定模式通道切换的学习实验和评估  }
+\section*{ 未知固定模式通道切换的学习实验和评估  }
 我们介绍DQN实现的详细信息，然后通过固定模式切换模式模型评估其性能，并将其与最佳策略进行比较。
 
 我们通过使用体验重放算法[5]进行深度Q学习来设计DQN，并在TensorFlow [24]中实现它。 我们的DQN的结构最终确定为一个完全连接的神经网络，两个隐藏层中的每一层都包含200个神经元。1每个神经元的激活函数为ReLU，DQN的输入定义为先前动作的组合 和对前M个时隙的观察。
@@ -215,7 +215,7 @@ This might serve as an useful benchmark dataset for researchers to use.
 	\includegraphics[width = 1.0\textwidth]{附录图4}
 	\caption{fig4}
 \end{figure}
-\section{  结论和展望   }
+\section*{  结论和展望   }
 
 在本文中，我们考虑了在通道相关且系统统计信息未知的情况下，在更通用和更实际的情况下动态多通道访问问题。 问题是一个未知的POMDP，没有任何可解决的解决方案，我们已经采用了一种端到端DQN方法，该方法直接利用历史观察和操作来通过在线学习找到访问策略。 在固定模式信道切换中，我们已经分析地找到了具有已知系统统计信息和完整观察能力的最佳访问策略。 通过仿真，我们证明了DQN即使没有任何先验知识也能够实现相同的最佳性能。 我们还从仿真和实际数据跟踪中都表明，DQN在更复杂的情况下可以实现近乎最佳的性能。 此外，我们设计了自适应DQN，并通过数值模拟表明它可以检测系统变化并在非平稳动态环境中重新学习。
 
